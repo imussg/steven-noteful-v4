@@ -5,6 +5,9 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 
 const Note = require('../models/note');
+const Folder = require('../models/folder');
+const Tag = require('../models/tag');
+const User = require('../models/user');
 
 const router = express.Router();
 
@@ -85,6 +88,17 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
+  if (folderId) {
+    Folder.findById(folderId)
+      .then(folder => {
+        if(folder.userId !== userId) {
+          const err = new Error('The folder `userId` is not valid');
+          err.status = 400;
+          return next(err);
+        }
+      });
+  }
+
   if (tags) {
     tags.forEach((tag) => {
       if (!mongoose.Types.ObjectId.isValid(tag)) {
@@ -92,6 +106,14 @@ router.post('/', (req, res, next) => {
         err.status = 400;
         return next(err);
       }
+      Tag.findById(tag)
+        .then(result => {
+          if(!tag.userId === userId) {
+            const err = new Error('The tags `userId` is not valid');
+            err.status = 400;
+            return next(err);
+          }
+        });
     });
   }
 
@@ -134,6 +156,17 @@ router.put('/:id', (req, res, next) => {
     return next(err);
   }
 
+  if (folderId) {
+    Folder.findById(folderId)
+      .then(folder => {
+        if(folder.userId !== userId) {
+          const err = new Error('The folder `userId` is not valid');
+          err.status = 400;
+          return next(err);
+        }
+      });
+  }
+
   if (tags) {
     const badIds = tags.map((tag) => !mongoose.Types.ObjectId.isValid(tag));
     if (badIds.length) {
@@ -141,7 +174,18 @@ router.put('/:id', (req, res, next) => {
       err.status = 400;
       return next(err);
     }
+    tags.forEach(tag => {
+      Tag.findById(tag)
+        .then(result => {
+          if(!result.userId === userId) {
+            const err = new Error('The tags `userId` is not valid');
+            err.status = 400;
+            return next(err);
+          }
+        });
+    })
   }
+
 
   const updateNote = { title, content, folderId, tags, userId };
 
