@@ -7,6 +7,7 @@ const passport = require('passport');
 
 const { PORT, MONGODB_URI } = require('./config');
 const localStrategy = require('./passport/local');
+const jwtStrategy = require('./passport/jwt');
 
 const notesRouter = require('./routes/notes');
 const foldersRouter = require('./routes/folders');
@@ -29,7 +30,8 @@ app.use(express.static('public'));
 app.use(express.json());
 
 // Utilize the given `strategy`
-passport.use(localStrategy);
+passport.use("local", localStrategy);
+passport.use("jwt", jwtStrategy);
 
 // Mount routers
 app.use('/api/notes', notesRouter);
@@ -52,6 +54,7 @@ app.use((err, req, res, next) => {
     const errBody = Object.assign({}, err, { message: err.message });
     res.status(err.status).json(errBody);
   } else {
+    console.error(err);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 });

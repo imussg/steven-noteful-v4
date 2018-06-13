@@ -1,10 +1,13 @@
 'use strict';
 
 const express = require('express');
+const passport = require('passport');
 
 const User = require('../models/user');
 
 const router = express.Router();
+
+router.use('/', passport.authenticate('jwt', { session: false, failWithError: true }));
 
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
