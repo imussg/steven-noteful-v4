@@ -14,7 +14,9 @@ router.use('/', passport.authenticate('jwt', { session: false, failWithError: tr
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
 
-  Tag.find()
+  const userId = req.user.id;
+
+  Tag.find({ userId })
     .sort('name')
     .then(results => {
       res.json(results);
@@ -51,8 +53,9 @@ router.get('/:id', (req, res, next) => {
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
   const { name } = req.body;
+  const userId = req.user.id;
 
-  const newTag = { name };
+  const newTag = { name, userId };
 
   /***** Never trust users - validate input *****/
   if (!name) {
