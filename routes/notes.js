@@ -71,7 +71,7 @@ router.get('/:id', (req, res, next) => {
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
   const { title, content, folderId, tags = [] } = req.body;
-
+  const userId = req.user.id;
   /***** Never trust users - validate input *****/
   if (!title) {
     const err = new Error('Missing `title` in request body');
@@ -95,7 +95,7 @@ router.post('/', (req, res, next) => {
     });
   }
 
-  const newNote = { title, content, folderId, tags };
+  const newNote = { title, content, folderId, tags, userId };
 
   Note.create(newNote)
     .then(result => {
@@ -113,6 +113,7 @@ router.post('/', (req, res, next) => {
 router.put('/:id', (req, res, next) => {
   const { id } = req.params;
   const { title, content, folderId, tags = [] } = req.body;
+  const userId = req.user.id;
 
   /***** Never trust users - validate input *****/
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -142,7 +143,7 @@ router.put('/:id', (req, res, next) => {
     }
   }
 
-  const updateNote = { title, content, folderId, tags };
+  const updateNote = { title, content, folderId, tags, userId };
 
   Note.findByIdAndUpdate(id, updateNote, { new: true })
     .then(result => {
