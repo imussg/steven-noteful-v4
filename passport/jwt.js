@@ -1,5 +1,5 @@
 'use strict';
-
+ 
 const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
 const { JWT_SECRET } = require('../config');
 
@@ -13,4 +13,4 @@ const jwtStrategy = new JwtStrategy(options, (payload, done) => {
   done(null, payload.user);
 });
 
-global.exports = jwtStrategy;
+module.exports = jwtStrategy;
