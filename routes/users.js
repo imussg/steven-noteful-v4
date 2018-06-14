@@ -56,7 +56,7 @@ router.post('/', (req, res, next) => {
     username: { min: 1 },
     password: { min: 8, max: 72 }
   };
-
+ 
   const tooSmallField = Object.keys(sizedFields).find(
     field => 'min' in sizedFields[field] &&
       req.body[field].trim().length < sizedFields[field].min
@@ -103,6 +103,13 @@ router.post('/', (req, res, next) => {
         err.status = 400;
       }
       next(err);
+    });
+});
+
+router.get('/', (req, res, next) => {
+  return User.find()
+    .then(users => {
+      return res.status(201).json(users);
     });
 });
 
