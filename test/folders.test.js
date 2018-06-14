@@ -125,7 +125,7 @@ describe('Noteful API - Folders', function () {
 
   });
 
-  describe.only('POST /api/folders', function () {
+  describe('POST /api/folders', function () {
 
     it('should create and return a new item when provided valid data', function () {
       const newItem = { name: 'newFolder', userId: user.id };
@@ -189,16 +189,19 @@ describe('Noteful API - Folders', function () {
     it('should update the folder', function () {
       const updateItem = { name: 'Updated Name' };
       let data;
-      return Folder.findOne()
+      return Folder.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
-          return chai.request(app).put(`/api/folders/${data.id}`).send(updateItem);
+          return chai.request(app)
+            .put(`/api/folders/${data.id}`)
+            .send(updateItem)
+            .set('Authorization', `Bearer ${token}`);
         })
         .then(function (res) {
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res.body).to.be.a('object');
-          expect(res.body).to.have.all.keys('id', 'name', 'createdAt', 'updatedAt');
+          expect(res.body).to.have.all.keys('id', 'name', 'userId', 'createdAt', 'updatedAt');
           expect(res.body.id).to.equal(data.id);
           expect(res.body.name).to.equal(updateItem.name);
           expect(new Date(res.body.createdAt)).to.eql(data.createdAt);
@@ -209,10 +212,11 @@ describe('Noteful API - Folders', function () {
 
 
     it('should respond with a 400 for an invalid id', function () {
-      const updateItem = { name: 'Blah' };
+      const updateItem = { name: 'Blah', userId: user.id };
       return chai.request(app)
         .put('/api/folders/NOT-A-VALID-ID')
         .send(updateItem)
+        .set('Authorization', `Bearer ${token}`)
         .then(res => {
           expect(res).to.have.status(400);
           expect(res.body.message).to.equal('The `id` is not valid');
@@ -220,23 +224,26 @@ describe('Noteful API - Folders', function () {
     });
 
     it('should respond with a 404 for an id that does not exist', function () {
-      const updateItem = { name: 'Blah' };
+      const updateItem = { name: 'Blah', userId: user.id };
       // The string "DOESNOTEXIST" is 12 bytes which is a valid Mongo ObjectId
       return chai.request(app)
         .put('/api/folders/DOESNOTEXIST')
         .send(updateItem)
+        .set('Authorization', `Bearer ${token}`)
         .then(res => {
           expect(res).to.have.status(404);
         });
     });
 
     it('should return an error when missing "name" field', function () {
-      const updateItem = {};
+      const updateItem = { userId: user.id };
       let data;
-      return Folder.findOne()
+      return Folder.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
-          return chai.request(app).put(`/api/folders/${data.id}`).send(updateItem);
+          return chai.request(app).put(`/api/folders/${data.id}`)
+            .send(updateItem)
+            .set('Authorization', `Bearer ${token}`);
         })
         .then(res => {
           expect(res).to.have.status(400);
@@ -247,13 +254,14 @@ describe('Noteful API - Folders', function () {
     });
 
     it('should return an error when given a duplicate name', function () {
-      return Folder.find().limit(2)
+      return Folder.find({ userId: user.id }).limit(2)
         .then(results => {
           const [item1, item2] = results;
           item1.name = item2.name;
           return chai.request(app)
             .put(`/api/folders/${item1.id}`)
-            .send(item1);
+            .send(item1)
+            .set('Authorization', `Bearer ${token}`);
         })
         .then(res => {
           expect(res).to.have.status(400);
@@ -269,10 +277,10 @@ describe('Noteful API - Folders', function () {
 
     it('should delete an existing document and respond with 204', function () {
       let data;
-      return Folder.findOne()
+      return Folder.findOne({ userId: user.id })
         .then(_data => {
           data = _data;
-          return chai.request(app).delete(`/api/folders/${data.id}`);
+          return chai.request(app).delete(`/api/folders/${data.id}`).set('Authorization', `Bearer ${token}`);
         })
         .then(function (res) {
           expect(res).to.have.status(204);
@@ -287,6 +295,7 @@ describe('Noteful API - Folders', function () {
     it('should respond with a 400 for an invalid id', function () {
       return chai.request(app)
         .delete('/api/folders/NOT-A-VALID-ID')
+        .set('Authorization', `Bearer ${token}`)
         .then(res => {
           expect(res).to.have.status(400);
           expect(res.body.message).to.equal('The `id` is not valid');
