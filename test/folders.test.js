@@ -280,7 +280,6 @@ describe('Noteful API - Folders', function () {
       return Folder.find({ userId: user.id }).limit(1)
         .then(_data => {
           data = _data[0];
-          console.log(`${data}`);
           return chai.request(app)
             .delete(`/api/folders/${data.id}`)
             .set('Authorization', `Bearer ${token}`);
