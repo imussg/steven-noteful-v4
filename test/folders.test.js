@@ -277,12 +277,15 @@ describe('Noteful API - Folders', function () {
 
     it('should delete an existing document and respond with 204', function () {
       let data;
-      return Folder.findOne({ userId: user.id })
+      return Folder.find({ userId: user.id }).limit(1)
         .then(_data => {
-          data = _data;
-          return chai.request(app).delete(`/api/folders/${data.id}`).set('Authorization', `Bearer ${token}`);
+          data = _data[0];
+          console.log(`${data}`);
+          return chai.request(app)
+            .delete(`/api/folders/${data.id}`)
+            .set('Authorization', `Bearer ${token}`);
         })
-        .then(function (res) {
+        .then(res => {
           expect(res).to.have.status(204);
           expect(res.body).to.be.empty;
           return Folder.count({ _id: data.id });
